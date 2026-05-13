@@ -1,10 +1,15 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+// ─── src/main.jsx ─────────────────────────────────────────────────────────────
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./styles/main.css";
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+// Remove the static loading screen once React is ready
+const loader = document.getElementById("initial-loader");
+if (loader) loader.style.display = "none";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
     <App />
-  </StrictMode>,
-)
+  </React.StrictMode>
+);
