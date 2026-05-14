@@ -1,7 +1,6 @@
-
-// ─────────────────────────────────────────────────────────────────────────────
 // src/components/robot/RobotCard.jsx
-// ─────────────────────────────────────────────────────────────────────────────
+import React from "react";
+
 export function RobotCard({ robot, onStart, onStop, onEdit, onDelete, onViewLogs }) {
   const statusColors = {
     active:  "var(--color-success)",
@@ -25,7 +24,15 @@ export function RobotCard({ robot, onStart, onStop, onEdit, onDelete, onViewLogs
             {robot.market?.name} · {robot.trade_type?.display_name}
           </div>
         </div>
-        <span className="badge" style={{ background: `${statusColor}18`, color: statusColor, border: `1px solid ${statusColor}30` }}>
+        <span
+          className="badge"
+          style={{
+            background: `${statusColor}18`,
+            color: statusColor,
+            border: `1px solid ${statusColor}30`,
+            textTransform: "capitalize",
+          }}
+        >
           {isRunning && <span className="live-dot" style={{ marginRight: 4, width: 6, height: 6 }} />}
           {robot.status}
         </span>
@@ -34,14 +41,33 @@ export function RobotCard({ robot, onStart, onStop, onEdit, onDelete, onViewLogs
       {/* Stats row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 14 }}>
         {[
-          { label: "Trades",   value: robot.total_trades },
+          { label: "Trades",   value: robot.total_trades ?? 0 },
           { label: "Win Rate", value: `${robot.win_rate || 0}%` },
-          { label: "Session",  value: `${profit >= 0 ? "+" : ""}$${profit.toFixed(2)}`, color: profit >= 0 ? "var(--color-success)" : "var(--color-danger)" },
-          { label: "Strategy", value: robot.strategy?.replace("_", " ") },
+          {
+            label: "Session",
+            value: `${profit >= 0 ? "+" : ""}$${profit.toFixed(2)}`,
+            color: profit >= 0 ? "var(--color-success)" : "var(--color-danger)",
+          },
+          { label: "Strategy", value: (robot.strategy || "").replace(/_/g, " ") },
         ].map((s) => (
-          <div key={s.label} style={{ background: "var(--bg-base)", borderRadius: "var(--radius-sm)", padding: "8px 10px" }}>
+          <div
+            key={s.label}
+            style={{
+              background: "var(--bg-base)",
+              borderRadius: "var(--radius-sm)",
+              padding: "8px 10px",
+            }}
+          >
             <div className="text-xs text-muted">{s.label}</div>
-            <div className="font-bold text-mono" style={{ fontSize: 13, color: s.color || "var(--text-primary)", marginTop: 2 }}>
+            <div
+              className="font-bold text-mono"
+              style={{
+                fontSize: 13,
+                color: s.color || "var(--text-primary)",
+                marginTop: 2,
+                textTransform: "capitalize",
+              }}
+            >
               {s.value}
             </div>
           </div>
@@ -51,25 +77,37 @@ export function RobotCard({ robot, onStart, onStop, onEdit, onDelete, onViewLogs
       {/* Actions */}
       <div className="flex gap-sm">
         {isRunning ? (
-          <button className="btn btn--danger btn--sm" onClick={() => onStop(robot)}>
+          <button className="btn btn--danger btn--sm" onClick={() => onStop?.(robot)}>
             <i className="bi bi-stop-circle-fill" /> Stop
           </button>
         ) : (
-          <button className="btn btn--success btn--sm" onClick={() => onStart(robot)}>
+          <button className="btn btn--success btn--sm" onClick={() => onStart?.(robot)}>
             <i className="bi bi-play-circle-fill" /> Start
           </button>
         )}
-        <button className="btn btn--outline btn--sm" onClick={() => onViewLogs(robot)}>
+        <button className="btn btn--outline btn--sm" onClick={() => onViewLogs?.(robot)}>
           <i className="bi bi-terminal" /> Logs
         </button>
-        <button className="btn btn--ghost btn--sm" onClick={() => onEdit(robot)} disabled={isRunning}>
+        <button
+          className="btn btn--ghost btn--sm"
+          onClick={() => onEdit?.(robot)}
+          disabled={isRunning}
+          title="Edit robot"
+        >
           <i className="bi bi-pencil" />
         </button>
-        <button className="btn btn--ghost btn--sm" onClick={() => onDelete(robot)} disabled={isRunning}
-          style={{ color: "var(--color-danger)", marginLeft: "auto" }}>
+        <button
+          className="btn btn--ghost btn--sm"
+          onClick={() => onDelete?.(robot)}
+          disabled={isRunning}
+          title="Delete robot"
+          style={{ color: "var(--color-danger)", marginLeft: "auto" }}
+        >
           <i className="bi bi-trash" />
         </button>
       </div>
     </div>
   );
 }
+
+export default RobotCard;
