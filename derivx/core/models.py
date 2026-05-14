@@ -497,7 +497,7 @@ class Market(models.Model):
     )
     # Status
     status = models.CharField(
-        max_digits=20, choices=MarketStatus.choices, default=MarketStatus.OPEN
+        max_length=20, choices=MarketStatus.choices, default=MarketStatus.OPEN
     )
     is_featured = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -718,7 +718,7 @@ class Trade(models.Model):
     expiry_time = models.DateTimeField(null=True, blank=True)
     # Result
     status = models.CharField(
-        max_digits=20, choices=TradeStatus.choices, default=TradeStatus.OPEN
+        max_length=20, choices=TradeStatus.choices, default=TradeStatus.OPEN
     )
     profit_loss = models.DecimalField(max_digits=20, decimal_places=8, default=Decimal("0.00"))
     # Robot reference (if placed by robot)
@@ -840,7 +840,7 @@ class Robot(models.Model):
     custom_logic = models.JSONField(default=dict, blank=True)  # Parsed logic tree
     # Status & stats
     status = models.CharField(
-        max_digits=20, choices=RobotStatus.choices, default=RobotStatus.STOPPED
+        max_length=20, choices=RobotStatus.choices, default=RobotStatus.STOPPED
     )
     is_public = models.BooleanField(default=False)   # Share robot in marketplace
     total_trades = models.PositiveIntegerField(default=0)
