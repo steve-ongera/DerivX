@@ -1,15 +1,16 @@
 // ═══════════════════════════════════════════════════════════════
 // src/pages/Trade.jsx  — Main trading terminal
 // ═══════════════════════════════════════════════════════════════
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
 import TradingChart from "../components/trading/TradingChart";
 import TradePanel from "../components/trading/TradePanel";
 import MarketSelector from "../components/trading/MarketSelector";
-import { ActiveTrades, TradeHistory } from "../components/trading/MarketSelector";
-import { Ticker } from "../components/trading/MarketSelector";
+import ActiveTrades from "../components/trading/ActiveTrades";
+import TradeHistory from "../components/trading/TradeHistory";
+import Ticker from "../components/trading/Ticker";
 import { marketsAPI, tradesAPI } from "../utils/api";
 import { wsManager } from "../utils/websocket";
 import { useAuth } from "../App";
@@ -157,7 +158,7 @@ export default function Trade() {
                 </div>
                 {activeTab === "active"
                   ? <ActiveTrades trades={activeTrades} />
-                  : <TradeHistory trades={history}   />
+                  : <TradeHistory trades={history} />
                 }
               </div>
             </div>
