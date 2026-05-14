@@ -1,3 +1,6 @@
+// src/components/trading/Ticker.jsx
+import React from "react";
+
 export function Ticker({ markets = [], onSelect }) {
   return (
     <div className="ticker-strip">
@@ -22,3 +25,5 @@ export function Ticker({ markets = [], onSelect }) {
     </div>
   );
 }
+
+export default Ticker;
