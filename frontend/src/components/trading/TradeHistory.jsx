@@ -1,3 +1,5 @@
+import React from "react";
+
 export function TradeHistory({ trades = [] }) {
   return (
     <div className="card">
@@ -58,3 +60,5 @@ export function TradeHistory({ trades = [] }) {
     </div>
   );
 }
+
+export default TradeHistory;
