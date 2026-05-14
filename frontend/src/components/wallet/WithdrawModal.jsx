@@ -37,9 +37,13 @@ const WithdrawModal = ({ isOpen, onClose, onSuccess, balance }) => {
       {balance !== undefined && (
         <div
           style={{
-            background: "var(--bg-base)", padding: "var(--space-sm) var(--space-md)",
-            borderRadius: "var(--radius-md)", marginBottom: "var(--space-md)",
-            display: "flex", justifyContent: "space-between", alignItems: "center",
+            background: "var(--bg-base)",
+            padding: "var(--space-sm) var(--space-md)",
+            borderRadius: "var(--radius-md)",
+            marginBottom: "var(--space-md)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
           <span className="text-muted text-xs">Available Balance</span>
@@ -49,11 +53,14 @@ const WithdrawModal = ({ isOpen, onClose, onSuccess, balance }) => {
         </div>
       )}
 
-      {/* Method tabs */}
       <div
         style={{
-          display: "flex", gap: "var(--space-xs)", marginBottom: "var(--space-lg)",
-          background: "var(--bg-base)", padding: 4, borderRadius: "var(--radius-md)",
+          display: "flex",
+          gap: "var(--space-xs)",
+          marginBottom: "var(--space-lg)",
+          background: "var(--bg-base)",
+          padding: 4,
+          borderRadius: "var(--radius-md)",
         }}
       >
         {METHODS.map((m) => (
@@ -62,13 +69,20 @@ const WithdrawModal = ({ isOpen, onClose, onSuccess, balance }) => {
             type="button"
             onClick={() => setMethod(m.id)}
             style={{
-              flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
-              gap: 4, padding: "10px 8px", borderRadius: "var(--radius-sm)",
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 4,
+              padding: "10px 8px",
+              borderRadius: "var(--radius-sm)",
               background: method === m.id ? "var(--bg-elevated)" : "transparent",
               border: method === m.id ? `1px solid ${m.color}` : "1px solid transparent",
               color: method === m.id ? m.color : "var(--text-muted)",
-              cursor: "pointer", transition: "all var(--transition-fast)",
-              fontSize: "var(--font-size-xs)", fontWeight: 700,
+              cursor: "pointer",
+              transition: "all var(--transition-fast)",
+              fontSize: "var(--font-size-xs)",
+              fontWeight: 700,
             }}
           >
             <i className={`bi ${m.icon}`} style={{ fontSize: 20 }} />

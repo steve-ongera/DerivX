@@ -1,5 +1,5 @@
 // src/components/common/Toast.jsx
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 
 const ToastContext = createContext(null);
 
@@ -8,18 +8,21 @@ let toastId = 0;
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = useCallback(({ message, type = "info", duration = 4000 }) => {
-    const id = ++toastId;
-    setToasts((prev) => [...prev, { id, message, type }]);
-    if (duration > 0) {
-      setTimeout(() => removeToast(id), duration);
-    }
-    return id;
-  }, []);
-
   const removeToast = useCallback((id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
+
+  const addToast = useCallback(
+    ({ message, type = "info", duration = 4000 }) => {
+      const id = ++toastId;
+      setToasts((prev) => [...prev, { id, message, type }]);
+      if (duration > 0) {
+        setTimeout(() => removeToast(id), duration);
+      }
+      return id;
+    },
+    [removeToast]
+  );
 
   const toast = {
     success: (msg, opts) => addToast({ message: msg, type: "success", ...opts }),
@@ -66,8 +69,12 @@ const ToastItem = ({ toast, onClose }) => (
     <button
       onClick={onClose}
       style={{
-        background: "none", border: "none", color: "var(--text-muted)",
-        cursor: "pointer", padding: "2px", lineHeight: 1,
+        background: "none",
+        border: "none",
+        color: "var(--text-muted)",
+        cursor: "pointer",
+        padding: "2px",
+        lineHeight: 1,
       }}
     >
       <i className="bi bi-x" style={{ fontSize: "16px" }} />
