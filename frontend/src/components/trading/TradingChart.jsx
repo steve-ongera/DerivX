@@ -1,27 +1,32 @@
 // src/components/trading/TradingChart.jsx
-// Real-time candlestick & line chart powered by TradingView Lightweight Charts
+// Real-time candlestick & line chart — lightweight-charts v5
 
-import React, {
-  useEffect, useRef, useState, useCallback, useMemo
-} from "react";
-import { createChart, CrosshairMode, LineStyle } from "lightweight-charts";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import {
+  createChart,
+  CrosshairMode,
+  LineStyle,
+  CandlestickSeries,
+  LineSeries,
+  AreaSeries,
+} from "lightweight-charts";
 import { wsManager } from "../../utils/websocket";
 import { marketsAPI } from "../../utils/api";
 
 const TIMEFRAMES = [
-  { label: "1T",  granularity: 1,     unit: "ticks"   },
-  { label: "1M",  granularity: 60,    unit: "minutes" },
-  { label: "5M",  granularity: 300,   unit: "minutes" },
-  { label: "15M", granularity: 900,   unit: "minutes" },
-  { label: "1H",  granularity: 3600,  unit: "hours"   },
-  { label: "4H",  granularity: 14400, unit: "hours"   },
-  { label: "1D",  granularity: 86400, unit: "days"    },
+  { label: "1T",  granularity: 1     },
+  { label: "1M",  granularity: 60    },
+  { label: "5M",  granularity: 300   },
+  { label: "15M", granularity: 900   },
+  { label: "1H",  granularity: 3600  },
+  { label: "4H",  granularity: 14400 },
+  { label: "1D",  granularity: 86400 },
 ];
 
 const CHART_TYPES = [
   { id: "candle", icon: "bi-bar-chart-line-fill", label: "Candles" },
   { id: "line",   icon: "bi-graph-up",            label: "Line"    },
-  { id: "area",   icon: "bi-activity",             label: "Area"    },
+  { id: "area",   icon: "bi-activity",            label: "Area"    },
 ];
 
 export default function TradingChart({ market, onPriceUpdate }) {
@@ -30,17 +35,14 @@ export default function TradingChart({ market, onPriceUpdate }) {
   const seriesRef    = useRef(null);
   const wsKeyRef     = useRef(null);
 
-  const [chartType,      setChartType]      = useState("candle");
+  const [chartType,         setChartType]         = useState("candle");
   const [activeGranularity, setActiveGranularity] = useState(60);
-  const [currentPrice,   setCurrentPrice]   = useState(null);
-  const [prevPrice,      setPrevPrice]      = useState(null);
-  const [priceDirection, setPriceDirection] = useState("flat");
-  const [isLoading,      setIsLoading]      = useState(true);
-  const [lastDigit,      setLastDigit]      = useState(null);
+  const [currentPrice,      setCurrentPrice]      = useState(null);
+  const [priceDirection,    setPriceDirection]    = useState("flat");
+  const [isLoading,         setIsLoading]         = useState(true);
+  const [lastDigit,         setLastDigit]         = useState(null);
 
-  const priceDirection$ = useRef("flat");
-
-  // ── Create / destroy chart ───────────────────────────────────
+  // ── Create / destroy chart ────────────────────────────────────
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -48,33 +50,31 @@ export default function TradingChart({ market, onPriceUpdate }) {
       width:  containerRef.current.clientWidth,
       height: 420,
       layout: {
-        background:  { color: "#1e293b" },
-        textColor:   "#94a3b8",
-        fontSize:    12,
-        fontFamily:  "'JetBrains Mono', monospace",
+        background: { color: "#1e293b" },
+        textColor:  "#94a3b8",
+        fontSize:   12,
+        fontFamily: "'JetBrains Mono', monospace",
       },
       grid: {
-        vertLines:   { color: "#334155", style: LineStyle.Dotted },
-        horzLines:   { color: "#334155", style: LineStyle.Dotted },
+        vertLines: { color: "#334155", style: LineStyle.Dotted },
+        horzLines: { color: "#334155", style: LineStyle.Dotted },
       },
       crosshair: {
-        mode: CrosshairMode.Normal,
+        mode:     CrosshairMode.Normal,
         vertLine: { color: "#6366f1", width: 1, style: LineStyle.Dashed, labelBackgroundColor: "#6366f1" },
         horzLine: { color: "#6366f1", width: 1, style: LineStyle.Dashed, labelBackgroundColor: "#6366f1" },
       },
       rightPriceScale: {
-        borderColor:      "#334155",
-        textColor:        "#94a3b8",
-        scaleMargins:     { top: 0.1, bottom: 0.1 },
+        borderColor:  "#334155",
+        textColor:    "#94a3b8",
+        scaleMargins: { top: 0.1, bottom: 0.1 },
       },
       timeScale: {
-        borderColor:         "#334155",
-        timeVisible:          true,
-        secondsVisible:       activeGranularity <= 60,
-        rightOffset:          12,
-        barSpacing:           8,
-        fixLeftEdge:          false,
-        lockVisibleTimeRangeOnResize: true,
+        borderColor:    "#334155",
+        timeVisible:    true,
+        secondsVisible: false,
+        rightOffset:    12,
+        barSpacing:     8,
       },
       handleScroll: { mouseWheel: true, pressedMouseMove: true },
       handleScale:  { mouseWheel: true, pinch: true },
@@ -82,7 +82,6 @@ export default function TradingChart({ market, onPriceUpdate }) {
 
     chartRef.current = chart;
 
-    // Responsive resize
     const observer = new ResizeObserver(([entry]) => {
       chart.applyOptions({ width: entry.contentRect.width });
     });
@@ -91,7 +90,7 @@ export default function TradingChart({ market, onPriceUpdate }) {
     return () => {
       observer.disconnect();
       chart.remove();
-      chartRef.current = null;
+      chartRef.current  = null;
       seriesRef.current = null;
     };
   }, []);
@@ -100,32 +99,30 @@ export default function TradingChart({ market, onPriceUpdate }) {
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart) return;
+
     if (seriesRef.current) {
       try { chart.removeSeries(seriesRef.current); } catch {}
+      seriesRef.current = null;
     }
 
+    // v5 API: chart.addSeries(SeriesTypeClass, options)
     let series;
     if (chartType === "candle") {
-      series = chart.addCandlestickSeries({
-        upColor:          "#22c55e",
-        downColor:        "#ef4444",
-        borderUpColor:    "#22c55e",
-        borderDownColor:  "#ef4444",
-        wickUpColor:      "#22c55e",
-        wickDownColor:    "#ef4444",
+      series = chart.addSeries(CandlestickSeries, {
+        upColor:         "#22c55e",
+        downColor:       "#ef4444",
+        borderUpColor:   "#22c55e",
+        borderDownColor: "#ef4444",
+        wickUpColor:     "#22c55e",
+        wickDownColor:   "#ef4444",
       });
     } else if (chartType === "line") {
-      series = chart.addLineSeries({
-        color:           "#6366f1",
-        lineWidth:       2,
-        crosshairMarkerVisible: true,
-        crosshairMarkerRadius:  5,
-        crosshairMarkerBorderColor: "#6366f1",
-        crosshairMarkerBackgroundColor: "#0f172a",
-        priceLineColor:  "#6366f1",
+      series = chart.addSeries(LineSeries, {
+        color:     "#6366f1",
+        lineWidth: 2,
       });
     } else {
-      series = chart.addAreaSeries({
+      series = chart.addSeries(AreaSeries, {
         topColor:    "rgba(99,102,241,0.4)",
         bottomColor: "rgba(99,102,241,0.0)",
         lineColor:   "#6366f1",
@@ -136,7 +133,7 @@ export default function TradingChart({ market, onPriceUpdate }) {
     seriesRef.current = series;
   }, [chartType]);
 
-  // ── Load historical candles from API ──────────────────────────
+  // ── Load historical candles ───────────────────────────────────
   const loadHistory = useCallback(async () => {
     if (!market?.slug || !seriesRef.current) return;
     setIsLoading(true);
@@ -149,20 +146,18 @@ export default function TradingChart({ market, onPriceUpdate }) {
       if (!candles.length) return;
 
       if (chartType === "candle") {
-        const formatted = candles.map((c) => ({
+        seriesRef.current.setData(candles.map((c) => ({
           time:  Math.floor(new Date(c.timestamp).getTime() / 1000),
           open:  parseFloat(c.open_price),
           high:  parseFloat(c.high_price),
           low:   parseFloat(c.low_price),
           close: parseFloat(c.close_price),
-        }));
-        seriesRef.current.setData(formatted);
+        })));
       } else {
-        const formatted = candles.map((c) => ({
+        seriesRef.current.setData(candles.map((c) => ({
           time:  Math.floor(new Date(c.timestamp).getTime() / 1000),
           value: parseFloat(c.close_price),
-        }));
-        seriesRef.current.setData(formatted);
+        })));
       }
 
       chartRef.current?.timeScale().fitContent();
@@ -175,73 +170,48 @@ export default function TradingChart({ market, onPriceUpdate }) {
 
   useEffect(() => { loadHistory(); }, [loadHistory]);
 
-  // ── WebSocket: live price ticks ────────────────────────────────
+  // ── WebSocket: live price ticks ───────────────────────────────
   useEffect(() => {
     if (!market?.slug) return;
 
-    // Disconnect previous market
     if (wsKeyRef.current) wsManager.disconnectMarket(wsKeyRef.current);
-
     const key = wsManager.connectMarket(market.slug);
     wsKeyRef.current = market.slug;
-
-    // Subscribe candles
     wsManager.subscribeCandles(market.slug, activeGranularity);
 
-    // Tick handler
     const unsubTick = wsManager.on(key, "tick", (msg) => {
       const price = parseFloat(msg.price);
-      const digit = msg.last_digit;
-
-      setPrevPrice((prev) => {
-        const dir = price > prev ? "up" : price < prev ? "down" : "flat";
-        setPriceDirection(dir);
-        priceDirection$.current = dir;
-        return prev;
+      setCurrentPrice((prev) => {
+        setPriceDirection(price > prev ? "up" : price < prev ? "down" : "flat");
+        return price;
       });
+      setLastDigit(msg.last_digit);
+      onPriceUpdate?.({ price, digit: msg.last_digit, ask: msg.ask, bid: msg.bid });
 
-      setCurrentPrice(price);
-      setLastDigit(digit);
-      onPriceUpdate?.({ price, digit, ask: msg.ask, bid: msg.bid });
-
-      // Append tick to line/area series
       if (chartType !== "candle" && seriesRef.current) {
-        seriesRef.current.update({
-          time:  msg.epoch,
-          value: price,
-        });
+        seriesRef.current.update({ time: msg.epoch, value: price });
       }
     });
 
-    // Candle handler
     const unsubCandle = wsManager.on(key, "candle", (msg) => {
       if (!seriesRef.current) return;
-      const point = {
-        time:  msg.epoch,
-        open:  parseFloat(msg.open),
-        high:  parseFloat(msg.high),
-        low:   parseFloat(msg.low),
-        close: parseFloat(msg.close),
-      };
       if (chartType === "candle") {
-        seriesRef.current.update(point);
+        seriesRef.current.update({
+          time:  msg.epoch,
+          open:  parseFloat(msg.open),
+          high:  parseFloat(msg.high),
+          low:   parseFloat(msg.low),
+          close: parseFloat(msg.close),
+        });
       } else {
         seriesRef.current.update({ time: msg.epoch, value: parseFloat(msg.close) });
       }
     });
 
-    return () => {
-      unsubTick();
-      unsubCandle();
-    };
+    return () => { unsubTick(); unsubCandle(); };
   }, [market?.slug, activeGranularity, chartType, onPriceUpdate]);
 
-  // ── Price direction CSS class ──────────────────────────────────
-  const priceClass = useMemo(() => {
-    if (priceDirection === "up")   return "live-price up";
-    if (priceDirection === "down") return "live-price down";
-    return "live-price flat";
-  }, [priceDirection]);
+  const priceClass = useMemo(() => `live-price ${priceDirection}`, [priceDirection]);
 
   const changeIcon = priceDirection === "up"
     ? <i className="bi bi-caret-up-fill text-success" />
@@ -251,9 +221,7 @@ export default function TradingChart({ market, onPriceUpdate }) {
 
   return (
     <div className="chart-container">
-      {/* Header */}
       <div className="chart-toolbar">
-        {/* Market name + live price */}
         <div className="flex items-center gap-md" style={{ minWidth: 220 }}>
           <span className="live-dot" />
           <div>
@@ -261,10 +229,7 @@ export default function TradingChart({ market, onPriceUpdate }) {
               {market?.symbol || "—"}
             </div>
             <div className={priceClass} style={{ fontSize: 22 }}>
-              {currentPrice !== null
-                ? currentPrice.toFixed(market?.display_decimals ?? 2)
-                : "—"
-              }
+              {currentPrice !== null ? currentPrice.toFixed(market?.display_decimals ?? 2) : "—"}
               {changeIcon && <span style={{ fontSize: 14, marginLeft: 4 }}>{changeIcon}</span>}
             </div>
           </div>
@@ -277,7 +242,6 @@ export default function TradingChart({ market, onPriceUpdate }) {
 
         <div style={{ flex: 1 }} />
 
-        {/* Timeframe selector */}
         <div className="flex items-center gap-sm">
           {TIMEFRAMES.map((tf) => (
             <button
@@ -290,7 +254,6 @@ export default function TradingChart({ market, onPriceUpdate }) {
           ))}
         </div>
 
-        {/* Chart type */}
         <div className="flex items-center gap-sm" style={{ borderLeft: "1px solid var(--border-color)", paddingLeft: "var(--space-md)" }}>
           {CHART_TYPES.map((ct) => (
             <button
@@ -304,19 +267,18 @@ export default function TradingChart({ market, onPriceUpdate }) {
           ))}
         </div>
 
-        {/* Reload */}
         <button className="btn btn--ghost btn--sm" onClick={loadHistory} title="Refresh">
           <i className="bi bi-arrow-clockwise" />
         </button>
       </div>
 
-      {/* Chart canvas */}
       <div style={{ position: "relative" }}>
         {isLoading && (
           <div style={{
             position: "absolute", inset: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
-            background: "rgba(15,23,42,0.7)", zIndex: 10, borderRadius: "0 0 var(--radius-lg) var(--radius-lg)"
+            background: "rgba(15,23,42,0.7)", zIndex: 10,
+            borderRadius: "0 0 var(--radius-lg) var(--radius-lg)",
           }}>
             <i className="bi bi-arrow-repeat spin" style={{ fontSize: 24, color: "var(--color-primary)" }} />
           </div>
