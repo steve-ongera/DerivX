@@ -4,7 +4,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
-import RobotBuilder, { RobotCard } from "../components/robot/RobotBuilder";
+import RobotBuilder from "../components/robot/RobotBuilder";
+import RobotCard from "../components/robot/RobotCard";
 import { robotsAPI } from "../utils/api";
 import { wsManager } from "../utils/websocket";
 
@@ -74,7 +75,13 @@ export default function Robot() {
     setEditingRobot(null);
   };
 
-  const LOG_COLORS = { success: "var(--color-success)", warning: "var(--color-warning)", error: "var(--color-danger)", trade: "var(--color-accent)", info: "var(--text-secondary)" };
+  const LOG_COLORS = {
+    success: "var(--color-success)",
+    warning: "var(--color-warning)",
+    error:   "var(--color-danger)",
+    trade:   "var(--color-accent)",
+    info:    "var(--text-secondary)",
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
@@ -207,4 +214,3 @@ export default function Robot() {
     </div>
   );
 }
-
