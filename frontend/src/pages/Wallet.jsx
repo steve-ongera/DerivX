@@ -1,11 +1,11 @@
-
 // ═══════════════════════════════════════════════════════════════
 // src/pages/Wallet.jsx
 // ═══════════════════════════════════════════════════════════════
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/layout/Navbar";
 import Sidebar from "../components/layout/Sidebar";
-import { DepositModal, WithdrawModal } from "../components/layout/Sidebar";
+import DepositModal from "../components/wallet/DepositModal";
+import WithdrawModal from "../components/wallet/WithdrawModal";
 import { walletAPI } from "../utils/api";
 import { useAuth } from "../App";
 
@@ -165,4 +165,3 @@ export default function Wallet() {
     </div>
   );
 }
-
